@@ -1,0 +1,23 @@
+> enqueue 10
+  front [10]
+> enqueue 20
+  front [10, 20]
+> enqueue 30
+  front [10, 20, 30]
+> peek
+  10   front [10, 20, 30]
+> dequeue
+  10   front [20, 30]
+> enqueue 40
+  front [20, 30, 40]
+> size
+  3
+> dequeue
+  20   front [30, 40]
+> dequeue
+  30   front [40]
+> dequeue
+  40   front []
+> dequeue
+  error: underflow: queue is empty
+> quit

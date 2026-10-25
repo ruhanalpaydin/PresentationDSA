@@ -1,0 +1,497 @@
+% !TEX spellcheck = en_US
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+% (NC) 2026 Haluk Bingol
+% github.com/halukbingol/LaTeX-Templates
+%
+% Licensees may copy, distribute, display, and perform the work and make derivative works 
+% and remixes based on it only for non-commercial purposes. 
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% =====================================================================
+%  Queues -- Examples: Real Programs, Real Output
+%  ---------------------------------------------------------------------
+%  Built on hblib/Template/hblibTemplate.tex with the libraries in ../../hblib/.
+%  Programs and their real outputs are in codeoutput/:
+%     codeoutput/<Name>.java  a program (classes without main() are only compiled)
+%     codeoutput/<Name>.txt   what it printed, made by:  bash run_examples.sh
+% =====================================================================
+
+\documentclass[aspectratio=169,10pt,compress]{beamer}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V hblib
+	\usepackage{../../hblib/hblibPresentation} % lib presentation: theme, i/N, \hSection, algorithm2e, ...
+	\usepackage{../../hblib/hblibCodeoutput} % lib code + output: \lstcode, \lstterminal, ...
+	\usepackage{../../hblib/hblibDatastructures} % lib data structures: \hString, \hStack, \hQueue
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A hblib
+
+
+% xcolor, array (and the L{width} column), listings, tikz and algorithm2e come from the hblib libraries
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+
+\newcommand{\win}{\textbf{Windows}}
+\newcommand{\mac}{\textbf{macOS}}
+
+% listings: fixed character cells, so the columns of a program's output stay aligned
+\lstset{columns=fixed}
+
+% algorithm2e set-up (the package is loaded by hblibPresentation)
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwError}{error}
+
+% ---------------------------------------------------------------------
+\title{Queues}
+\subtitle{Examples: Real Programs, Real Output}
+\author[Bingol]{Haluk O. Bingol}
+
+\institute[FCIS]{
+    Faculty of Computer and Information Sciences\\
+    Yeditepe University
+}
+\date{
+	{\tiny \hbTimeStamp}
+}
+
+\begin{document}
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+  \titlepage
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Outline}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={1-3}, hideallsubsections]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={4-5}, hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Setup]{How to Use These Examples}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Running the examples}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \small This deck and its output live in \texttt{queue-5-examples/}:
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language={}, basicstyle=\ttfamily\scriptsize]
+queue-5-examples/
+|-- queue-examples.tex
+|-- run_examples.sh
+`-- codeoutput/
+    |-- IntQueue.java
+    |-- IntQueue.txt
+    |-- ...
+    `-- Trace.txt
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \small Every output on these slides was printed by the program next to it. Nothing is typed by hand:
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=bash, basicstyle=\ttfamily\scriptsize]
+cd queue-5-examples
+bash run_examples.sh           # all
+bash run_examples.sh Printer.java
+pdflatex queue-examples.tex    # twice
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+      \scriptsize \win: use \emph{Git Bash}. \mac: \emph{Terminal}. The script needs a JDK (17 or newer).
+    \end{column}
+  \end{columns}
+  \vspace{0.4em}
+  \begin{block}{One source of truth}
+    \small Edit the program, run the script, compile the slides. The code and its output can never disagree.
+  \end{block}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{What is in the folder}
+  \begin{center}\small
+  \begin{tabular}{@{}L{0.24\textwidth}L{0.62\textwidth}@{}}
+    \toprule
+    \textbf{File} & \textbf{Shows} \\
+    \midrule
+    \texttt{IntQueue.java}  & a queue of \texttt{int} in a fixed circular array \\
+    \texttt{Trace.java}     & enqueue and dequeue, with \texttt{head} and \texttt{tail} printed \\
+    \texttt{Errors.java}    & underflow and overflow, with their messages \\
+    \texttt{ArrayQueue.java}& a generic queue that grows and shrinks \\
+    \texttt{Printer.java}   & a printer simulation: waiting times \\
+    \texttt{BfsMaze.java}   & breadth-first search in a maze \\
+    \texttt{Josephus.java}  & people in a circle, every third one leaves \\
+    \texttt{Palindrome.java}& a deque read from both ends \\
+    \texttt{HotPotato.java} & a circle of children and a potato \\
+    \texttt{SlidingMax.java}& the maximum of every window, with a deque \\
+    \texttt{LibraryQueue.java} & \texttt{Queue} and \texttt{ArrayDeque} from \texttt{java.util} \\
+    \texttt{Priority.java}  & \texttt{PriorityQueue} is not FIFO \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[IntQueue]{A Queue of int in an Array}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Class]{The class}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{IntQueue}: the data}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=1, lastline=17, firstnumber=1]{codeoutput/IntQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}\small
+        \item \texttt{a}: the array. \texttt{final}: we never replace it.
+        \item \texttt{head}: index of the front element.
+        \item \texttt{tail}: index where the \textbf{next} element goes.
+        \item \texttt{size}: how many elements there are. Two indices alone cannot tell an empty queue from a full one.
+        \item \texttt{\%} wraps the indices: after slot 3 comes slot 0.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{IntQueue}: enqueue and dequeue}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=19, lastline=30, firstnumber=19]{codeoutput/IntQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{\texttt{enqueue}}
+        \small write at \texttt{tail}; move \texttt{tail}; \texttt{size++}
+      \end{block}
+      \begin{block}{\texttt{dequeue}}
+        \small read \texttt{a[head]}; move \texttt{head}; \texttt{size-{}-}
+      \end{block}
+      \small \hRemark{Check first}: full or empty, throw with a clear message.
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Use]{Using it}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Watching \texttt{head} and \texttt{tail}}
+  \lstcoderightstep[0.52][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Trace.java}{Java}{codeoutput/Trace.txt}
+  \small Before you click: write down \texttt{head}, \texttt{tail} and the queue after each line.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The same states in the array}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \small four enqueues: \texttt{head = 0}, \texttt{tail = 0}, \texttt{size = 4} (full)\\
+      \begin{tikzpicture}\hQueueArray{4}{0}{0}{4}{5,8,13,21}[0.6][0.4]\end{tikzpicture}\\[0.35em]
+      two dequeues: \texttt{head = 2}, \texttt{tail = 2}, \texttt{size = 2}\\
+      \begin{tikzpicture}\hQueueArray{4}{2}{2}{2}{13,21}[0.6][0.4]\end{tikzpicture}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small \texttt{enqueue(34)}: \texttt{tail} wraps to 0\\
+      \begin{tikzpicture}\hQueueArray{4}{2}{1}{3}{13,21,34}[0.6][0.4]\end{tikzpicture}\\[0.35em]
+      \texttt{enqueue(55)}: again full, \texttt{head = tail = 2}\\
+      \begin{tikzpicture}\hQueueArray{4}{2}{2}{4}{13,21,34,55}[0.6][0.4]\end{tikzpicture}
+    \end{column}
+  \end{columns}
+  \vspace{0.3em}
+  \small When the queue is full, \texttt{head == tail}: only \texttt{size} tells the two states apart.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Underflow and overflow}
+  \lstcodedownstep[basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Errors.java}{Java}{codeoutput/Errors.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[ArrayQueue]{A Generic Queue That Grows}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{ArrayQueue<T>}}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=1, lastline=18, firstnumber=1]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=19, lastline=37, firstnumber=19]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+  \end{columns}
+  \small The array is circular too. When it is full, \texttt{grow} copies the elements \textbf{in queue order} to a bigger array and resets \texttt{head} to 0 (next slide).
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Watching the capacity}
+  \lstcoderightstep[0.56][basicstyle=\ttfamily\tiny, firstline=39, lastline=47, firstnumber=39][basicstyle=\ttfamily\tiny]{codeoutput/ArrayQueue.java}{Java}{codeoutput/GrowDemo.txt}
+  \small \texttt{grow} copies from \texttt{head}, wrapping in the old array, then resets \texttt{head} to 0 and \texttt{tail} to \texttt{size}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A queue of strings}
+  \lstcoderight[0.52][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/UseQueue.java}{Java}{codeoutput/UseQueue.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Applications]{Four Real Uses}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Printer]{A printer}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Simulating a printer}
+  \lstcoderightstep[0.5][basicstyle=\ttfamily\tiny, firstline=10, lastline=30, firstnumber=10][basicstyle=\ttfamily\tiny]{codeoutput/Printer.java}{Java}{codeoutput/Printer.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[BFS]{Breadth-first search}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Breadth-first search in a maze}
+  \lstcoderightstep[0.5][basicstyle=\ttfamily\tiny, firstline=17, lastline=36, firstnumber=17][basicstyle=\ttfamily\tiny]{codeoutput/BfsMaze.java}{Java}{codeoutput/BfsMaze.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Josephus]{Josephus and palindrome}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The Josephus problem}
+  \lstcoderightstep[0.54][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Josephus.java}{Java}{codeoutput/Josephus.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A palindrome, read from both ends}
+  \lstcoderightstep[0.54][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Palindrome.java}{Java}{codeoutput/Palindrome.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Hot potato}
+  \lstcoderight[0.54][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/HotPotato.java}{Java}{codeoutput/HotPotato.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The maximum of every window}
+  \lstcodedown[basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/SlidingMax.java}{Java}{codeoutput/SlidingMax.txt}
+  \small A deque keeps only the candidates: the front is always the maximum of the current window.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Library]{Queues from \texttt{java.util}}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{ArrayDeque} is a queue}
+  \lstcoderightstep[0.54][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/LibraryQueue.java}{Java}{codeoutput/LibraryQueue.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The methods of \texttt{Queue} and \texttt{Deque}}
+  \begin{center}\footnotesize
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Task} & \textbf{throws on failure} & \textbf{returns a value on failure} \\
+    \midrule
+    add at the rear      & \texttt{add(e)}    & \texttt{offer(e)} \\
+    remove the front     & \texttt{remove()}  & \texttt{poll()} \\
+    look at the front    & \texttt{element()} & \texttt{peek()} \\
+    \midrule
+    add at the front     & \texttt{addFirst(e)} & \texttt{offerFirst(e)} \\
+    remove the rear      & \texttt{removeLast()} & \texttt{pollLast()} \\
+    look at the rear     & \texttt{getLast()} & \texttt{peekLast()} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \small \texttt{Queue} has the first three rows; \texttt{Deque} (a double-ended queue) has all of them. \texttt{ArrayDeque} implements both.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{PriorityQueue} is not FIFO}
+  \lstcodedown[basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Priority.java}{Java}{codeoutput/Priority.txt}
+  \small It is a \textbf{heap}: the smallest element leaves first, whatever the arrival order.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Summary]{Summary}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{What we saw}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}\small
+        \item a queue of \texttt{int} in a fixed circular array
+        \item \texttt{enqueue}, \texttt{dequeue}, \texttt{peek}, with underflow and overflow
+        \item a generic queue that grows by doubling and copies in queue order
+        \item a printer simulation: waiting times from a real queue
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}\small
+        \item BFS: the queue is the frontier of the search
+        \item Josephus, palindrome, hot potato, sliding-window maximum
+        \item \texttt{ArrayDeque}: \texttt{offer}, \texttt{poll}, \texttt{peek}
+        \item \texttt{PriorityQueue}: smallest first, not FIFO
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{block}{The pattern}
+    \small One container, two ends: add at one, remove from the other. Every program here is a variation of that sentence.
+  \end{block}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Exercises}
+  \begin{enumerate}\small
+    \item Add \texttt{isFull()} and \texttt{capacity()} to \texttt{IntQueue}.
+    \item Change \texttt{Printer} so that the printer is twice as fast; what happens to the average wait?
+    \item Print the path of the BFS, not only the distance (keep a \texttt{parent} array).
+    \item Solve Josephus with $n = 41$, $k = 3$ (the original problem).
+    \item Add \texttt{clear()} to \texttt{ArrayQueue} and test it.
+    \item Write a queue of \texttt{char} and use it to check palindromes without a deque.
+  \end{enumerate}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+	\begin{center}
+		\vspace{4cm}
+		\hRemark{\Huge Questions?}
+	\end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+\end{document}

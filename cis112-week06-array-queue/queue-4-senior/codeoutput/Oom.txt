@@ -1,0 +1,2 @@
+OutOfMemoryError after 2847 arrays of 8 KB
+message: Java heap space

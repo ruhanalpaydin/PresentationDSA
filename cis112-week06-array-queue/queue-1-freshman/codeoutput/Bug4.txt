@@ -1,0 +1,2 @@
+full: front [10, 20, 30]  size = 3
+after enqueue(40): front [40, 20, 30, 40]  size = 4

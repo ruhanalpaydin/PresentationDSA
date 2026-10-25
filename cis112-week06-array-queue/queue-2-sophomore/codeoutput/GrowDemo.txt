@@ -1,0 +1,4 @@
+new            capacity=4 size=0
+4 enqueues     capacity=4 front [1, 2, 3, 4]
+5th enqueue    capacity=8 front [1, 2, 3, 4, 5]
+4 dequeues     capacity=4 front [5]

@@ -1,0 +1,7 @@
+put 1 -> [1]            size=1 dropped=0
+put 2 -> [1, 2]         size=2 dropped=0
+put 3 -> [1, 2, 3]      size=3 dropped=0
+put 4 -> [1, 2, 3, 4]   size=4 dropped=0
+put 5 -> [2, 3, 4, 5]   size=4 dropped=1
+put 6 -> [3, 4, 5, 6]   size=4 dropped=2
+take -> 3   left [4, 5, 6]

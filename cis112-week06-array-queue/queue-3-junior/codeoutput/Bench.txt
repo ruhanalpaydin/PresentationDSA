@@ -1,0 +1,6 @@
+implementation                     time   ns/op
+int[] (fixed capacity)            17 ms     3.6
+ArrayQueue<Integer> (grows)       30 ms     6.0
+LinkedQueue<Integer>              25 ms     5.0
+java.util.ArrayDeque              21 ms     4.3
+java.util.LinkedList              29 ms     5.9

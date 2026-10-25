@@ -1,0 +1,5 @@
+"ey edip adanada pide ye" -> palindrome
+"kucuk" -> palindrome
+"merhaba" -> not a palindrome
+"Küçük" -> palindrome
+note: case, spaces and punctuation are ignored

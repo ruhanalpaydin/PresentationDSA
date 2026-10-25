@@ -1,0 +1,4 @@
+waiting = front [Ali, Ayse, Mehmet]   size = 3
+served  = Ali   waiting = front [Ayse, Mehmet]
+front   = Ayse
+empty?  = false

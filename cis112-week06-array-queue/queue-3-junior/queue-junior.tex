@@ -1,0 +1,507 @@
+% !TEX spellcheck = en_US
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+% (NC) 2026 Haluk Bingol
+% github.com/halukbingol/LaTeX-Templates
+%
+% Licensees may copy, distribute, display, and perform the work and make derivative works 
+% and remixes based on it only for non-commercial purposes. 
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% =====================================================================
+%  Queues -- Junior Level: Implementations, Cost and Systems
+%  ---------------------------------------------------------------------
+%  Built on hblib/Template/hblibTemplate.tex with the libraries in ../../hblib/.
+%  Programs and their real outputs are in codeoutput/:
+%     codeoutput/<Name>.java  a program (classes without main() are only compiled)
+%     codeoutput/<Name>.txt   what it printed, made by:  bash run_examples.sh
+%  Timings change from run to run; the slides only claim what held in every run.
+% =====================================================================
+
+\documentclass[aspectratio=169,10pt,compress]{beamer}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V hblib
+	\usepackage{../../hblib/hblibPresentation} % lib presentation: theme, i/N, \hSection, algorithm2e, ...
+	\usepackage{../../hblib/hblibCodeoutput} % lib code + output: \lstcode, \lstterminal, ...
+	\usepackage{../../hblib/hblibDatastructures} % lib data structures: \hString, \hStack, \hQueue
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A hblib
+
+
+% xcolor, array (and the L{width} column), listings, tikz and algorithm2e come from the hblib libraries
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+
+\newcommand{\win}{\textbf{Windows}}
+\newcommand{\mac}{\textbf{macOS}}
+
+% listings: fixed character cells, so the columns of a program's output stay aligned
+\lstset{columns=fixed}
+
+% algorithm2e set-up (the package is loaded by hblibPresentation)
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwError}{error}
+
+% ---------------------------------------------------------------------
+\title{Queues}
+\subtitle{Junior Level: Implementations, Cost and Systems}
+\author[Bingol]{Haluk O. Bingol}
+
+\institute[FCIS]{
+    Faculty of Computer and Information Sciences\\
+    Yeditepe University
+}
+\date{
+	{\tiny \hbTimeStamp}
+}
+
+\begin{document}
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+  \titlepage
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Outline}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={1-3}, hideallsubsections]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={4-5}, hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Implementations]{Array or Linked List?}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A linked queue}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=1, lastline=20, firstnumber=1]{codeoutput/LinkedQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=23, lastline=38, firstnumber=23]{codeoutput/LinkedQueue.java}{Java}
+    \end{column}
+  \end{columns}
+  \small \texttt{enqueue} appends after \texttt{tail}; \texttt{dequeue} advances \texttt{head}. Both are $O(1)$ and nothing is ever copied.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{How the linked queue works}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.9cm, box/.style={draw, thick, minimum width=1.2cm, minimum height=0.6cm, font=\scriptsize},
+      ptr/.style={-latex, thick}]
+    \node[box, fill=colorHead!70] (a) {A};
+    \node[box, right=of a] (b) {B};
+    \node[box, right=of b] (c) {C};
+    \node[draw, thick, minimum width=0.35cm, minimum height=0.6cm, right=0.15cm of c, font=\scriptsize] (n) {/};
+    \draw[ptr] (a) -- (b);
+    \draw[ptr] (b) -- (c);
+    \draw[ptr] (c) -- (n);
+    \node[above=0.5cm of a, font=\scriptsize, red] (h) {head};
+    \node[above=0.5cm of c, font=\scriptsize, red] (t) {tail};
+    \draw[-latex, red] (h) -- (a);
+    \draw[-latex, red] (t) -- (c);
+  \end{tikzpicture}
+  \end{center}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}\small
+        \item \texttt{enqueue}: new node after \texttt{tail}; move \texttt{tail}.
+        \item \texttt{dequeue}: take \texttt{head.item}; move \texttt{head}.
+        \item Empty: \texttt{head == null} (and \texttt{tail == null}).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}\small
+        \item No wrap-around, no capacity, no copies.
+        \item Each element is a separate object, somewhere on the heap.
+        \item One more reference per element (\texttt{next}).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The two implementations}
+  \begin{center}\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+     & \textbf{circular array} & \textbf{linked list} \\
+    \midrule
+    \texttt{enqueue}      & $O(1)$, may copy $O(n)$ & $O(1)$ \\
+    \texttt{dequeue}      & $O(1)$                  & $O(1)$ \\
+    memory per element    & one slot (4 or 8 bytes) & object + node \\
+    spare memory          & up to $2\times$ after growth & none \\
+    cache behaviour       & contiguous, friendly    & scattered, pointer chasing \\
+    grows to any size     & yes, by copying         & yes, without copying \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \small The asymptotic costs are the same. The differences are \textbf{constants} and \textbf{memory}: measure them for your workload.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Performance]{Measuring Performance}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Time]{Time}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A small benchmark}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=1, lastline=22, firstnumber=1]{codeoutput/Bench.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=40, lastline=54, firstnumber=40]{codeoutput/Bench.java}{Java}
+    \end{column}
+  \end{columns}
+  \small Five rounds, the best one kept; the queue holds about 1000 elements; a checksum prevents the compiler from deleting the work.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The result on this machine}
+  \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/Bench.txt}
+  \vspace{0.4em}
+  \begin{itemize}\small
+    \item \texttt{int[]} is the fastest: no object per element.
+    \item \texttt{ArrayDeque} beats \texttt{LinkedList}; our \texttt{LinkedQueue} sits between them.
+    \item Boxed \texttt{Integer} erases much of the difference between array and list: the objects dominate.
+    \item These numbers are for \textbf{one} run; the order of the last four may change on another machine.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Benchmarking properly: JMH}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=Java, basicstyle=\ttfamily\scriptsize]
+@State(Scope.Thread)
+public class QueueBench {
+    IntQueue q = new IntQueue(2048);
+
+    @Benchmark
+    public void enqueueDequeue(Blackhole bh) {
+        for (int i = 0; i < 1000; i++) {
+            q.enqueue(i);
+            bh.consume(q.dequeue());
+        }
+    }
+}
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}\small
+        \item Dead-code elimination, warm-up, and separate JVM forks are handled by JMH.
+        \item \texttt{@State} keeps the queue alive.
+        \item \texttt{Blackhole} makes the result visible.
+        \item Report the \textbf{score} and the \textbf{error}: a single number is not a measurement.
+      \end{itemize}
+      \vspace{0.3em}
+      \hRemark{Not run here}: it needs the JMH dependencies (Maven or Gradle).
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Memory]{Memory}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Bytes per element}
+  \begin{center}\small
+  \begin{tabular}{@{}lrr@{}}
+    \toprule
+    \textbf{representation} & \textbf{per element} & \textbf{1 million elements} \\
+    \midrule
+    \texttt{int[]} (circular)            & 4 bytes            & 4 MB \\
+    \texttt{ArrayDeque<Integer>}          & 16 + 4--8 bytes    & 20--24 MB \\
+    \texttt{LinkedQueue<Integer>}         & 16 + 24 bytes      & 40 MB \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.5em}
+  \begin{itemize}\small
+    \item \textbf{64-bit JVM with compressed oops} (the default up to about 32\,GB of heap):
+          an \texttt{Integer} is 16 bytes, a two-reference node is 24 bytes.
+    \item The \texttt{ArrayDeque} number also includes the spare capacity left after doubling.
+    \item Without compressed oops, every reference is 8 bytes and the node grows to 40.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Why the array is friendly to the cache}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Circular array}
+        \begin{tikzpicture}[cell/.style={draw, minimum size=0.42cm, font=\tiny}]
+          \foreach \i/\v in {0/A,1/B,2/C,3/D,4/E,5/F}
+            \node[cell, fill=colorUsed!35] at (\i*0.42,0) {\v};
+        \end{tikzpicture}
+        \small one block of memory: a cache line brings several elements at once.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Linked list}
+        \begin{tikzpicture}[cell/.style={draw, minimum size=0.42cm, font=\tiny}]
+          \node[cell, fill=colorUsed!35] (a) at (0,0) {A};
+          \node[cell, fill=colorUsed!35] (b) at (1.1,0.5) {B};
+          \node[cell, fill=colorUsed!35] (c) at (2.2,-0.2) {C};
+          \draw[-latex] (a) -- (b);
+          \draw[-latex] (b) -- (c);
+        \end{tikzpicture}
+        \small each node is elsewhere: every step can be a cache miss.
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.4em}
+  \small The processor fetches 64-byte lines. An array uses all of a line; a linked list uses a few bytes of each.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Amortized]{Amortized Analysis}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Counting the copies}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny]{codeoutput/CopyCount.java}{Java}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/CopyCount.txt}
+    \end{column}
+  \end{columns}
+  \small The copies happen at 1, 2, 4, 8, \dots: $1+2+4+8 = 15$ for 16 enqueues, less than $2n = 32$.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The potential method}
+  Let the \textbf{potential} of a queue be
+  \[
+  	\Phi = 2\cdot\texttt{size} - \texttt{capacity}
+  \]
+  \begin{itemize}\small
+    \item Without a copy: an enqueue costs 1 and raises $\Phi$ by 2: amortized $1 + 2 = 3$.
+    \item With a copy: the actual cost is $1 + \texttt{capacity}$, while
+          $\Phi$ falls from \texttt{capacity} to 2:
+          \[
+          	\widehat{c} = 1 + \texttt{capacity} + (2 - \texttt{capacity}) = 3
+          \]
+    \item So every enqueue is at most 3 units of work, amortized: $O(1)$.
+  \end{itemize}
+  \vspace{0.2em}
+  \small The potential is the ``saved work'' in the spare slots. It pays for the next copy.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Why shrink at one quarter, not one half}
+  \begin{itemize}\small
+    \item If the array halves when it becomes \textbf{half} full, then after a shrink it is half full again:
+          one dequeue more and it shrinks again, one enqueue more and it grows again.
+    \item An enqueue/dequeue pair at the boundary would copy every time: $O(n)$ per operation.
+    \item Shrink at \textbf{one quarter}: after halving, the array is half full, so there is room for
+          a quarter of its capacity of deletions and insertions before the next resize.
+    \item The rule of thumb: grow at $1$, shrink at $\frac{1}{4}$; the gap of a factor 4 prevents \hRemark{thrashing}.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Systems]{Queues in Systems}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Two queues, one search}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/BfsPerf.txt}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item BFS on an $800\times800$ grid, 640\,000 cells.
+        \item Both queues give the same answer.
+        \item The times are close: the boxes and the algorithm dominate, not the list.
+        \item A queue of \texttt{int} (an index, not an \texttt{Integer}) would avoid the boxes.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.3em}
+  \small \hRemark{The lesson}: pick the implementation by measurement, not by a story about linked lists.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A bounded queue between two threads}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny, firstline=5, lastline=28, firstnumber=5][basicstyle=\ttfamily\scriptsize]{codeoutput/ProducerConsumer.java}{Java}{codeoutput/ProducerConsumer.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A thread pool is a queue}
+  \lstcoderight[0.52][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/PoolDemo.java}{Java}{codeoutput/PoolDemo.txt}
+  \small One worker takes the tasks in the order they were submitted: the executor's queue is FIFO.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Blocking or busy waiting?}
+  \begin{center}\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+     & \textbf{blocking queue} & \textbf{busy wait} \\
+    \midrule
+    when empty & the consumer sleeps & the consumer spins \\
+    CPU while waiting & none & 100\% of a core \\
+    latency & one wake-up & immediate \\
+    use when & the wait is long & the wait is a few nanoseconds \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \begin{itemize}\small
+    \item \texttt{ArrayBlockingQueue}, \texttt{LinkedBlockingQueue}: \texttt{put} and \texttt{take} block.
+    \item \texttt{ConcurrentLinkedQueue}: non-blocking; the caller decides what to do when it is empty.
+    \item A spin loop on a shared queue can burn a core and still lose the race: prefer the library.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Summary]{Summary}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Big ideas}
+  \begin{itemize}
+    \item Array and linked queue have the same $O(1)$ operations; they differ in constants and memory.
+    \item An array queue is contiguous and cache-friendly; a linked queue allocates one node per element.
+    \item Boxed types cost: an \texttt{Integer} is 16 bytes before the container adds anything.
+    \item Doubling is $O(1)$ amortized; the potential method proves it with $\Phi = 2\,\texttt{size} - \texttt{capacity}$.
+    \item Shrink at one quarter, not one half, to avoid thrashing at the boundary.
+    \item In a system, the queue is where threads meet: bounded queues give back-pressure, unbounded ones hide it.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Exercises}
+  \begin{enumerate}\small
+    \item Run \texttt{Bench.java} on your machine. Which implementation wins? By how much?
+    \item Change the benchmark to keep 100\,000 elements in the queue instead of 1000. What changes?
+    \item Write an \texttt{IntQueue} with \texttt{int} elements and use it in \texttt{BfsPerf}; measure the difference.
+    \item Prove with the potential method that shrinking at one quarter is $O(1)$ amortized.
+    \item Run \texttt{ProducerConsumer} with a queue of capacity 1 and of capacity 1000. Compare the time.
+    \item Replace the single-thread pool in \texttt{PoolDemo} with two threads and explain the output order.
+  \end{enumerate}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+	\begin{center}
+		\vspace{4cm}
+		\hRemark{\Huge Questions?}
+	\end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+\end{document}

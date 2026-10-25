@@ -1,0 +1,8 @@
+waiting: front [Ali, Ayse, Mehmet]
+served Ali | front [Ayse, Mehmet]
+next: Ayse
+served Ayse | front [Mehmet]
+Zeynep joins | front [Mehmet, Zeynep]
+served Mehmet | front [Zeynep]
+served Zeynep | front []
+empty? true

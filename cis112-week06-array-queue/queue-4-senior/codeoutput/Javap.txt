@@ -1,0 +1,13 @@
+$ javap -p java.util.ArrayDeque | sed -n '3,8p'
+  transient java.lang.Object[] elements;
+  transient int head;
+  transient int tail;
+  private static final int MAX_ARRAY_SIZE;
+  private static final long serialVersionUID;
+  private void grow(int);
+$ javap -p java.util.ArrayDeque | grep -E " (inc|dec|sub|elementAt)\("
+  static final int inc(int, int);
+  static final int dec(int, int);
+  static final int inc(int, int, int);
+  static final int sub(int, int, int);
+  static final <E> E elementAt(java.lang.Object[], int);

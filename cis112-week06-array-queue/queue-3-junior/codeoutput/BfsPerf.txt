@@ -1,0 +1,3 @@
+ArrayDeque    17 ms   visited 640000
+LinkedList    18 ms   visited 640000
+same answer: true

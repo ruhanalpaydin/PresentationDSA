@@ -1,0 +1,4 @@
+dequeue = 10
+Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 3 out of bounds for length 3
+	at Bug1.enqueue(Bug1.java:6)
+	at Bug1.main(Bug1.java:15)

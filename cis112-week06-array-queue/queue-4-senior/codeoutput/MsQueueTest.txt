@@ -1,0 +1,4 @@
+enqueued by 4 threads = 400000
+dequeued                    = 400000
+checksum ok                 = true
+time                        = 50 ms

@@ -1,0 +1,15 @@
+$ javac Typo1.java
+Typo1.java:5: error: ';' expected
+        int x = q.peek()
+                        ^
+1 error
+$ javac Typo2.java
+Typo2.java:4: error: cannot find symbol
+        q.enqueu(1);            // the method is enqueue
+         ^
+  symbol:   method enqueu(int)
+  location: variable q of type IntQueue
+1 error
+$ java trace
+Error: Could not find or load main class trace
+Caused by: java.lang.ClassNotFoundException: trace

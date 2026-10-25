@@ -1,0 +1,487 @@
+% !TEX spellcheck = en_US
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+% (NC) 2026 Haluk Bingol
+% github.com/halukbingol/LaTeX-Templates
+%
+% Licensees may copy, distribute, display, and perform the work and make derivative works 
+% and remixes based on it only for non-commercial purposes. 
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% =====================================================================
+%  Queues -- Sophomore Level: Interfaces, Generics and Tests
+%  ---------------------------------------------------------------------
+%  Built on hblib/Template/hblibTemplate.tex with the libraries in ../../hblib/.
+%  Programs and their real outputs are in codeoutput/:
+%     codeoutput/<Name>.java  a program (classes without main() are only compiled)
+%     codeoutput/<Name>.txt   what it printed, made by:  bash run_examples.sh
+% =====================================================================
+
+\documentclass[aspectratio=169,10pt,compress]{beamer}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V hblib
+	\usepackage{../../hblib/hblibPresentation} % lib presentation: theme, i/N, \hSection, algorithm2e, ...
+	\usepackage{../../hblib/hblibCodeoutput} % lib code + output: \lstcode, \lstterminal, ...
+	\usepackage{../../hblib/hblibDatastructures} % lib data structures: \hString, \hStack, \hQueue
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A hblib
+
+
+% xcolor, array (and the L{width} column), listings, tikz and algorithm2e come from the hblib libraries
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+
+\newcommand{\win}{\textbf{Windows}}
+\newcommand{\mac}{\textbf{macOS}}
+
+% listings: fixed character cells, so the columns of a program's output stay aligned
+\lstset{columns=fixed}
+
+% algorithm2e set-up (the package is loaded by hblibPresentation)
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwError}{error}
+
+% ---------------------------------------------------------------------
+\title{Queues}
+\subtitle{Sophomore Level: Interfaces, Generics and Tests}
+\author[Bingol]{Haluk O. Bingol}
+
+\institute[FCIS]{
+    Faculty of Computer and Information Sciences\\
+    Yeditepe University
+}
+\date{
+	{\tiny \hbTimeStamp}
+}
+
+\begin{document}
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+  \titlepage
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Outline}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={1-3}, hideallsubsections]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={4-5}, hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Design]{Interface and Implementation}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Separate \emph{what} from \emph{how}}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny]{codeoutput/QueueADT.java}{Java}
+      \vspace{0.2em}
+      \scriptsize \texttt{QueueUnderflowException} is a five-line class that extends \texttt{RuntimeException}.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}\small
+        \item The \textbf{interface} is the ADT: the operations, nothing about arrays.
+        \item Callers write \texttt{QueueADT<String> q = new ArrayQueue<>()}; switching to a linked implementation changes \textbf{one} line.
+        \item \texttt{extends Iterable<T>}: every queue works in a for-each loop.
+        \item An \textbf{unchecked} exception (\texttt{RuntimeException}): dequeuing an empty queue is a programming error, like an array index error.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{\texttt{ArrayQueue<T>}: the implementation}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=1, lastline=21, firstnumber=1]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=22, lastline=41, firstnumber=22]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+  \end{columns}
+  \small The class says \texttt{implements QueueADT<T>}: the compiler checks that every method of the interface exists.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Program to the interface}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item The variable type is \texttt{QueueADT<String>}, not \texttt{ArrayQueue<String>}.
+        \item The rest of the program does not know how the queue is stored.
+        \item A linked implementation, a test double, or \texttt{ArrayDeque} can be substituted later.
+      \end{itemize}
+      \vspace{0.3em}
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=Java, basicstyle=\ttfamily\scriptsize]
+QueueADT<String> q = new ArrayQueue<>();
+q.enqueue("Ali");
+System.out.println(q.dequeue());
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/UseQueue.txt}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Generics]{Generics and Arrays}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Why not \texttt{new T[n]}?}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small Java does not know the type \texttt{T} when it runs: it is \textbf{erased}. So it cannot create an array of \texttt{T}.
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=Java, basicstyle=\ttfamily\scriptsize]
+T[] a = new T[n];              // error
+T[] a = (T[]) new Object[n];   // warning
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+      \vspace{0.3em}
+      \small The cast is \textbf{unchecked}: the compiler cannot prove it. We suppress the warning in one place.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{A heap of Object}
+        \small The array really is an \texttt{Object[]}. Every element put in is a \texttt{T}, so every element taken out is a \texttt{T} too.
+      \end{block}
+      \begin{block}{Danger}
+        \small If the array escapes as a \texttt{T[]}, code could store a wrong type in it. Keep it \texttt{private} and never return it.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The cast is safe here, but only inside}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=43, lastline=51, firstnumber=43]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{itemize}\small
+        \item \texttt{resize} creates one \texttt{Object[]} and copies into it.
+        \item A private method cannot be called from outside with a wrong type.
+        \item \texttt{@SuppressWarnings("unchecked")} is on the smallest possible scope: one line, one method.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Iterating from the front}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=53, lastline=63, firstnumber=53]{codeoutput/ArrayQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \small The iterator keeps its own counter and follows \texttt{head} around the array, so the order is front to rear even when the queue has wrapped.\\[0.3em]
+      \uncover<2->{\lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/IterateDemo.txt}}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Memory]{Resizing and Memory}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Copies]{How much copying?}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Growing and shrinking}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny, firstline=43, lastline=51, firstnumber=43][basicstyle=\ttfamily\tiny]{codeoutput/ArrayQueue.java}{Java}{codeoutput/GrowDemo.txt}
+  \small One \texttt{resize} method serves both grow and shrink: copy in queue order, then \texttt{head = 0}, \texttt{tail = size}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Amortized cost of doubling}
+  Enqueue $n$ elements into a queue that starts with capacity 1 and doubles:
+  \[
+  	\text{copies} = 1 + 2 + 4 + \dots + 2^{k} = 2^{k+1} - 1 < 2n
+  \]
+  \[
+  	\text{total work} < n + 2n = 3n
+  \]
+  \begin{itemize}\small
+    \item The average cost of one enqueue is less than 3 steps: $O(1)$ \hRemark{amortized}.
+    \item The single enqueue that copies still costs $O(n)$.
+    \item Shrinking at \textbf{one quarter} (not one half) means an enqueue/dequeue pair at the boundary does not copy every time.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Loitering]{Loitering}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Loitering: dequeued, but not garbage}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{With \texttt{a[head] = null}}
+        \lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/Loitering.txt}
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Without it}
+        \lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/Leak.txt}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.4em}
+  \begin{itemize}\small
+    \item The array still holds a reference to a dequeued object.
+    \item The garbage collector cannot free it, although the queue no longer uses it: \hRemark{loitering}.
+    \item The fix costs one assignment. It matters for queues of large objects and for long-running programs.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Testing]{Testing a Queue}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Tests without a framework}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, lastline=20]{codeoutput/TestArrayQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=21, firstnumber=21]{codeoutput/TestArrayQueue.java}{Java}
+    \end{column}
+  \end{columns}
+  \small One line per check, and a final count. A test that fails tells you which rule broke, not only that something broke.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The tests pass}
+  \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/TestArrayQueue.txt}
+  \vspace{0.3em}
+  \small The most valuable cases are the edges: a new queue, a full queue, a wrapped queue, and a dequeue on an empty queue.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The same tests with JUnit 5}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=Java, basicstyle=\ttfamily\scriptsize]
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class ArrayQueueTest {
+    @Test void fifoOrder() {
+        ArrayQueue<Integer> q = new ArrayQueue<>();
+        q.enqueue(1); q.enqueue(2);
+        assertEquals(1, q.dequeue());
+        assertEquals(2, q.dequeue());
+    }
+    @Test void underflow() {
+        assertThrows(QueueUnderflowException.class,
+                     () -> new ArrayQueue<>().dequeue());
+    }
+}
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}\small
+        \item \texttt{assertEquals} compares the value and prints both when they differ.
+        \item \texttt{assertThrows} checks that the right exception is thrown.
+        \item One test method per rule; the name says what is checked.
+      \end{itemize}
+      \vspace{0.3em}
+      \hRemark{Not run here}: it needs \texttt{junit-jupiter} on the class path (Maven or Gradle adds it).
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Library]{The Library: \texttt{Queue} and \texttt{Deque}}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The methods}
+  \begin{center}\footnotesize
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Task} & \textbf{throws on failure} & \textbf{returns a value on failure} \\
+    \midrule
+    add at the rear   & \texttt{add(e)}      & \texttt{offer(e)} \\
+    remove the front  & \texttt{remove()}    & \texttt{poll()} \\
+    look at the front & \texttt{element()}   & \texttt{peek()} \\
+    \midrule
+    add at the front  & \texttt{addFirst(e)} & \texttt{offerFirst(e)} \\
+    remove the rear   & \texttt{removeLast()} & \texttt{pollLast()} \\
+    look at the rear  & \texttt{getLast()}   & \texttt{peekLast()} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \begin{itemize}\small
+    \item \texttt{Queue} has the first three rows; \texttt{Deque} has all of them.
+    \item \texttt{ArrayDeque} implements \texttt{Deque}: it can be a queue, a stack, or both.
+    \item \texttt{LinkedList} also implements \texttt{Deque}, but each element costs a node.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Both ends at once}
+  \lstcoderight[0.52][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/DequeDemo.java}{Java}{codeoutput/DequeDemo.txt}
+  \small \texttt{addFirst} + \texttt{pollFirst} is a stack; \texttt{addLast} + \texttt{pollFirst} is a queue.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Summary]{Summary}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Recipes}
+  \begin{center}\small
+  \begin{tabular}{@{}L{0.28\textwidth}L{0.62\textwidth}@{}}
+    \toprule
+    \textbf{Need} & \textbf{Do} \\
+    \midrule
+    an ADT for callers      & a generic \texttt{interface QueueADT<T>} \\
+    a queue in an array     & two indices, \texttt{\% n}, and a \texttt{size} counter \\
+    to grow                 & double, copy in queue order, \texttt{head = 0}, \texttt{tail = size} \\
+    to avoid loitering      & \texttt{a[head] = null} before moving \texttt{head} \\
+    to test                 & empty, full, wrapped, underflow, 100-element order \\
+    a queue from the library& \texttt{Deque<T> q = new ArrayDeque<>()} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Exercises}
+  \begin{enumerate}\small
+    \item Add \texttt{clear()} and \texttt{contains(T x)} to \texttt{ArrayQueue}.
+    \item Write \texttt{LinkedQueue<T>} that implements the same \texttt{QueueADT<T>}. Change one line in \texttt{UseQueue}.
+    \item Make \texttt{ArrayQueue} shrink at one quarter and test the boundary: enqueue, dequeue, enqueue, dequeue, \dots
+    \item Write a JUnit test for a wrapped iterator (enqueue 5, dequeue 2, enqueue 3, then check the order).
+    \item Measure how many copies 1000 enqueues cause with doubling and with growth by 1.
+  \end{enumerate}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+	\begin{center}
+		\vspace{4cm}
+		\hRemark{\Huge Questions?}
+	\end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+\end{document}

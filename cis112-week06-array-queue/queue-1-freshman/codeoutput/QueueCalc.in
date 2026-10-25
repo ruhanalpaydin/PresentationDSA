@@ -1,0 +1,12 @@
+enqueue 10
+enqueue 20
+enqueue 30
+peek
+dequeue
+enqueue 40
+size
+dequeue
+dequeue
+dequeue
+dequeue
+quit

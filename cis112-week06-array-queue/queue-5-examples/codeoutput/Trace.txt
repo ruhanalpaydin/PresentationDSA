@@ -1,0 +1,9 @@
+enqueue(5)    front [5]   head=0, tail=1
+enqueue(8)    front [5, 8]   head=0, tail=2
+enqueue(13)   front [5, 8, 13]   head=0, tail=3
+enqueue(21)   front [5, 8, 13, 21]   head=0, tail=0
+dequeue() =   5   front [8, 13, 21]
+dequeue() =   8   front [13, 21]
+enqueue(34)   front [13, 21, 34]   head=2, tail=1
+enqueue(55)   front [13, 21, 34, 55]   head=2, tail=2
+size() =      4   (capacity 4)

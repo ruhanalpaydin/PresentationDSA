@@ -1,0 +1,4 @@
+items      = 1000
+sum        = 499500  (expected 499500)
+queue left = 0
+elapsed    = 3 ms

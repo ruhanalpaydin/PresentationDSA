@@ -1,0 +1,1 @@
+after dequeue: the 8 MB array is still reachable

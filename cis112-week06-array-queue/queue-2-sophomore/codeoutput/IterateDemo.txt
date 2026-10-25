@@ -1,0 +1,3 @@
+after 5 enqueues  = front [A, B, C, D, E]   capacity=8
+after the wrap    = front [C, D, E, F, G, H]
+for-each          = C D E F G H

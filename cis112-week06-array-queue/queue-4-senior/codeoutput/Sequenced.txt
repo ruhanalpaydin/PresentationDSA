@@ -1,0 +1,8 @@
+queue      = [A, B, C, D]
+getFirst() = A
+getLast()  = D
+reversed() = [D, C, B, A]
+after add  = [Z, A, B, C, D, E]
+removeFirst = Z
+removeLast  = E
+left        = [A, B, C, D]

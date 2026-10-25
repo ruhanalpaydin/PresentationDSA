@@ -1,0 +1,2 @@
+heap print = [5, 10, 20, 30, 40]
+poll order = 5 10 20 30 40

@@ -1,0 +1,6 @@
+deque        = [A, B, C]
+pollFirst()  = A
+pollLast()   = C
+deque        = [B]
+after push/offerLast = [front, B, rear]
+pop()        = front

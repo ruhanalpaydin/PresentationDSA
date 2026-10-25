@@ -1,0 +1,6 @@
+task 1 on pool-1-thread-1
+task 2 on pool-1-thread-1
+task 3 on pool-1-thread-1
+task 4 on pool-1-thread-1
+task 5 on pool-1-thread-1
+pool closed = true

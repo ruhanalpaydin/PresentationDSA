@@ -1,0 +1,12 @@
+PASS  new queue is empty
+PASS  new queue has size 0
+PASS  size is 3
+PASS  peek is 1
+PASS  dequeue is 1
+PASS  dequeue is 2
+PASS  order survives a growth
+PASS  FIFO order for 98 elements
+PASS  empty again
+PASS  dequeue on empty throws
+
+10 passed, 0 failed

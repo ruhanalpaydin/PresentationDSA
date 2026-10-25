@@ -1,0 +1,5 @@
+$ jshell -q try.jsh
+queue: [10, 20, 30]   front = 10
+poll -> 10
+poll -> 20
+queue: [30]   size = 1

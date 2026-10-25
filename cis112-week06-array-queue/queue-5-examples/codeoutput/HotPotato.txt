@@ -1,0 +1,6 @@
+Zeynep   is out   left: [Can, Ece, Ali, Ayse, Mehmet]
+Ayse     is out   left: [Mehmet, Can, Ece, Ali]
+Ali      is out   left: [Mehmet, Can, Ece]
+Mehmet   is out   left: [Can, Ece]
+Ece      is out   left: [Can]
+winner: Can

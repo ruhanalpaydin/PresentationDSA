@@ -1,0 +1,493 @@
+% !TEX spellcheck = en_US
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+% (NC) 2026 Haluk Bingol
+% github.com/halukbingol/LaTeX-Templates
+%
+% Licensees may copy, distribute, display, and perform the work and make derivative works 
+% and remixes based on it only for non-commercial purposes. 
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% =====================================================================
+%  Queues -- Freshman Level: Your First Queue in Java
+%  ---------------------------------------------------------------------
+%  Built on hblib/Template/hblibTemplate.tex with the libraries in ../../hblib/.
+%  Programs and their real outputs are in codeoutput/:
+%     codeoutput/<Name>.java  a program (classes without main() are only compiled)
+%     codeoutput/<Name>.sh    a terminal session, run in a copy of codeoutput/<Name>/
+%     codeoutput/<Name>.txt   what it printed, made by:  bash run_examples.sh
+% =====================================================================
+
+\documentclass[aspectratio=169,10pt,compress]{beamer}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V hblib
+	\usepackage{../../hblib/hblibPresentation} % lib presentation: theme, i/N, \hSection, algorithm2e, ...
+	\usepackage{../../hblib/hblibCodeoutput} % lib code + output: \lstcode, \lstterminal, ...
+	\usepackage{../../hblib/hblibDatastructures} % lib data structures: \hString, \hStack, \hQueue
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A hblib
+
+
+% xcolor, array (and the L{width} column), listings, tikz and algorithm2e come from the hblib libraries
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+
+\newcommand{\win}{\textbf{Windows}}
+\newcommand{\mac}{\textbf{macOS}}
+
+% listings: fixed character cells, so the columns of a program's output stay aligned
+\lstset{columns=fixed}
+\lstdefinelanguage{text}{}
+
+% algorithm2e set-up (the package is loaded by hblibPresentation)
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwError}{error}
+
+% ---------------------------------------------------------------------
+\title{Queues}
+\subtitle{Freshman Level: Your First Queue in Java}
+\author[Bingol]{Ruhan Alpaydin}
+
+\institute[FCIS]{
+    Faculty of Computer and Information Sciences\\
+    Yeditepe University
+}
+\date{
+	{\tiny \hbTimeStamp}
+}
+
+\begin{document}
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+  \titlepage
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Outline}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={1-3}, hideallsubsections]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={4-5}, hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Setup]{Getting Ready}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{What you need}
+  \begin{itemize}
+    \item A \textbf{JDK} (Java Development Kit) 17 or newer: it has \texttt{javac} (compiler) and \texttt{java} (runner).
+    \item A terminal and a text editor (or an IDE such as Eclipse or IntelliJ IDEA).
+    \item One folder for this week, e.g.\ \texttt{queue}, with all \texttt{.java} files in it.
+  \end{itemize}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Windows (Command Prompt)}
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language={}, basicstyle=\ttfamily\scriptsize]
+winget install EclipseAdoptium.Temurin.21.JDK
+rem open a NEW Command Prompt, then:
+mkdir queue
+cd queue
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{macOS (Terminal)}
+
+
+% +++++++++++++++++++++++++++++++++++++++ V lst
+%: -Lst.
+\begin{lstlisting}[style=codesnippet, language=bash, basicstyle=\ttfamily\scriptsize]
+brew install --cask temurin@21
+# or the .pkg from adoptium.net
+mkdir queue
+cd queue
+\end{lstlisting}
+% +++++++++++++++++++++++++++++++++++++++ A lst
+
+
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \lstterminal[basicstyle=\ttfamily\scriptsize]{codeoutput/Check.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Idea]{The Idea}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A queue in one picture}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}
+        \item \textbf{enqueue}: put at the rear
+        \item \textbf{dequeue}: take from the front
+        \item \textbf{peek}: look at the front
+        \item first in, first out (\textbf{FIFO})
+      \end{itemize}
+      \vspace{0.4em}
+      We keep the elements in an \textbf{array} \texttt{a} and remember the front in \texttt{head}, the next free slot in \texttt{tail}, and \texttt{size}.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \small empty: \texttt{head = tail = 0}, \texttt{size = 0}\\
+      \begin{tikzpicture}\hQueueArray{4}{0}{0}{0}{}[0.55][0.38]\end{tikzpicture}\\[0.3em]
+      \texttt{enqueue(5)}: \texttt{head = 0, tail = 1}\\
+      \begin{tikzpicture}\hQueueArray{4}{0}{1}{1}{5}[0.55][0.38]\end{tikzpicture}\\[0.3em]
+      \texttt{enqueue(8)}: \texttt{tail = 2}\\
+      \begin{tikzpicture}\hQueueArray{4}{0}{2}{2}{5,8}[0.55][0.38]\end{tikzpicture}\\[0.3em]
+      \texttt{dequeue()} returns 5: \texttt{head = 1}\\
+      \begin{tikzpicture}\hQueueArray{4}{1}{2}{1}{8}[0.55][0.38]\end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Build]{Building IntQueue Step by Step}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Step 1: the data}
+  \lstcode[basicstyle=\ttfamily\scriptsize, lastline=10]{codeoutput/IntQueue.java}{Java}
+  \begin{itemize}\small
+    \item \hCode{a}: the array. \hCode{final} means we never replace it with another array.
+    \item \hCode{head}: where the front element is. \hCode{tail}: where the next element goes.
+    \item \hCode{size}: how many elements. It tells an empty queue from a full one.
+    \item The \textbf{constructor} makes an array of the size the user asks for: \hCode{new IntQueue(4)}.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Step 2: enqueue}
+  \lstcode[basicstyle=\ttfamily\scriptsize, firstline=12, lastline=17, firstnumber=12]{codeoutput/IntQueue.java}{Java}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{1. check}
+        \small is the array full? \hCode{size == a.length} means overflow.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{2. write, then move}
+        \small \hCode{a[tail] = x}; then \hCode{tail = (tail + 1) \% a.length}.
+      \end{block}
+    \end{column}
+  \end{columns}
+  \small \hRemark{The \% is the wrap}: after the last slot comes slot 0, not slot \texttt{a.length}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Step 3: dequeue}
+  \lstcode[basicstyle=\ttfamily\scriptsize, firstline=19, lastline=25, firstnumber=19]{codeoutput/IntQueue.java}{Java}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{1. read the front}
+        \small \hCode{int x = a[head]}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{2. move, then return}
+        \small \hCode{head = (head + 1) \% a.length}; \hCode{size-{}-}; \hCode{return x}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \small \hRemark{Check first}: if \hCode{size == 0}, there is no front element. Throw an exception with a clear message.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Step 4: peek, isEmpty, size}
+  \lstcode[basicstyle=\ttfamily\scriptsize, firstline=27, lastline=44]{codeoutput/IntQueue.java}{Java}
+  \small \texttt{toString} is what \texttt{System.out.println(q)} prints: the elements from the front to the rear, following \texttt{head} around the array.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\subsection[Compile]{Compile and run}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Compile and run in the terminal}
+  \lstterminal[basicstyle=\ttfamily\scriptsize]{codeoutput/Compile.txt}
+
+  \vspace{0.1em}
+  \small
+  \texttt{javac Trace.java} also compiles \texttt{IntQueue.java}, because \texttt{Trace} uses it. Same commands on \win{} and \mac.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Tracing the program}
+  \lstcoderightstep[0.5][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\scriptsize]{codeoutput/Trace.java}{Java}{codeoutput/Trace.txt}
+  \small Before you click: write down \texttt{head}, \texttt{tail} and the queue after each line, then compare.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The same trace on paper}
+  \begin{center}\scriptsize
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{statement} & \texttt{head} & \texttt{tail} & \textbf{array} (capacity 4) \\
+    \midrule
+    \texttt{enqueue(5)}      & 0 & 1 & \begin{tikzpicture}\hQueueArray{4}{0}{1}{1}{5}[0.4][0.3]\end{tikzpicture} \\
+    \texttt{enqueue(8)}      & 0 & 2 & \begin{tikzpicture}\hQueueArray{4}{0}{2}{2}{5,8}[0.4][0.3]\end{tikzpicture} \\
+    \texttt{dequeue() = 5}   & 1 & 2 & \begin{tikzpicture}\hQueueArray{4}{1}{2}{1}{8}[0.4][0.3]\end{tikzpicture} \\
+    \texttt{enqueue(2)}      & 1 & 3 & \begin{tikzpicture}\hQueueArray{4}{1}{3}{2}{8,2}[0.4][0.3]\end{tikzpicture} \\
+    \texttt{enqueue(7)}      & 1 & 0 & \begin{tikzpicture}\hQueueArray{4}{1}{0}{3}{8,2,7}[0.4][0.3]\end{tikzpicture} \\
+    \texttt{peek() = 8}      & 1 & 0 & \begin{tikzpicture}\hQueueArray{4}{1}{0}{3}{8,2,7}[0.4][0.3]\end{tikzpicture} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Use]{Using the Queue}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A queue you can type to}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, lastline=15]{codeoutput/QueueCalc.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=16, firstnumber=16]{codeoutput/QueueCalc.java}{Java}
+    \end{column}
+  \end{columns}
+  \small \hCode{in.nextLine()} reads one command; \hCode{p[1]} is the number after \hCode{enqueue}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Running it}
+  \begin{columns}[T]
+    \begin{column}{0.44\textwidth}
+      \small Typed commands (here from the file \texttt{QueueCalc.in}):
+      \lstcode[basicstyle=\ttfamily\scriptsize, numbers=none]{codeoutput/QueueCalc.in}{text}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \uncover<2->{\lstoutput[basicstyle=\ttfamily\tiny]{codeoutput/QueueCalc.txt}}
+    \end{column}
+  \end{columns}
+  \small \win{} and \mac: \texttt{java QueueCalc} and type, or \texttt{java QueueCalc < QueueCalc.in} to read the file.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Mistakes]{Common Mistakes}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistake 1: no wrap-around}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\tiny]{codeoutput/Bug1.java}{Java}{codeoutput/Bug1.txt}
+
+  \vspace{0.2em}
+  \small \hCode{a[tail++]} grows \texttt{tail} past the end: there is no \texttt{a[3]}. Read the message: \emph{Index 3 out of bounds}, line 6.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistake 2: forgetting to move \texttt{head}}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\tiny]{codeoutput/Bug2.java}{Java}{codeoutput/Bug2.txt}
+
+  \vspace{0.2em}
+  \small \hCode{dequeue} returns the front but leaves \texttt{head} where it is: the same element comes out forever.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistake 3: no check for an empty queue}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\tiny]{codeoutput/Bug3.java}{Java}{codeoutput/Bug3.txt}
+
+  \vspace{0.2em}
+  \small The second \hCode{dequeue} returns a stale \texttt{0} with no error. A check with a clear message (\texttt{underflow}) is better than a silent wrong answer.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistake 4: the wrong ``full'' test}
+  \lstcoderightstep[0.55][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\tiny]{codeoutput/Bug4.java}{Java}{codeoutput/Bug4.txt}
+
+  \vspace{0.1em}
+  \small \hCode{tail == a.length} never fires after a wrap; the queue overwrote 10.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistake 5: printing the whole array}
+  \lstcoderightstep[0.6][basicstyle=\ttfamily\tiny][basicstyle=\ttfamily\tiny]{codeoutput/Bug5.java}{Java}{codeoutput/Bug5.txt}
+
+  \vspace{0.1em}
+  \small The array is \texttt{[40, 20, 30]}; the queue is \texttt{[20, 30]}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Mistakes the compiler finds}
+  \lstterminal[basicstyle=\ttfamily\scriptsize]{codeoutput/Typos.txt}
+
+  \vspace{0.1em}
+  \small
+  Fix the \emph{first} error first. Java is \textbf{case sensitive}: \texttt{Enqueue} is not \texttt{enqueue}, and \texttt{java trace} is not \texttt{java Trace}.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Summary]{Summary}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Cheat sheet}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{center}\small
+      \begin{tabular}{ll}
+        \toprule
+        \textbf{Task} & \textbf{Code} \\
+        \midrule
+        empty?   & \texttt{size == 0} \\
+        full?    & \texttt{size == a.length} \\
+        enqueue  & \texttt{a[tail] = x;}\\
+                 & \texttt{tail = (tail+1) \% n;}\\
+                 & \texttt{size++;}\\
+        dequeue  & \texttt{int x = a[head];}\\
+                 & \texttt{head = (head+1) \% n;}\\
+                 & \texttt{size-{}-;}\\
+        peek     & \texttt{return a[head];} \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Do}
+        \small check empty/full first; draw \texttt{head}, \texttt{tail} and \texttt{size} on paper; test with an empty queue
+      \end{block}
+      \begin{block}{Don't}
+        \small forget \texttt{\% n}; forget to move \texttt{head}; print the whole array; use \texttt{tail == n} as ``full''
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Exercises}
+  \begin{enumerate}\small
+    \item Draw \texttt{a}, \texttt{head}, \texttt{tail} after: \texttt{enqueue(3); enqueue(1); dequeue(); enqueue(4); enqueue(1); dequeue();}
+    \item Add \texttt{isFull()} to \texttt{IntQueue} and use it in \texttt{enqueue}.
+    \item Add a command \texttt{clear} to \texttt{QueueCalc}.
+    \item Write \texttt{CharQueue} (a queue of \texttt{char}) and use it to reverse your name.
+    \item Read numbers until \texttt{0} and print them in the same order, using \texttt{IntQueue}.
+    \item Fix \texttt{Bug1} \dots{} \texttt{Bug5}; run them again and compare the output.
+  \end{enumerate}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+	\begin{center}
+		\vspace{4cm}
+		\hRemark{\Huge Questions?}
+	\end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+\end{document}

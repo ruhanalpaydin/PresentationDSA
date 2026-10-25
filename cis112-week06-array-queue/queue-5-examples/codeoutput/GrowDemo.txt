@@ -1,0 +1,5 @@
+     front [A, B]             capacity=4 size=2
+     front [A, B, C, D]       capacity=4 size=4
+wrap front [C, D, E, F]       capacity=4 size=4
+grow front [C, D, E, F, G]    capacity=8 size=5
+     front [C, D, E, F, G, H] capacity=8 size=6

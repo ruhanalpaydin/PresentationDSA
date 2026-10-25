@@ -1,0 +1,8 @@
+queue       = [Ali, Ayse, Mehmet]
+poll()      = Ali
+peek()      = Ayse
+queue       = [Ayse, Mehmet]
+poll()      = Ayse
+poll()      = Mehmet
+poll(empty) = null
+element(empty) throws java.util.NoSuchElementException

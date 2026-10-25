@@ -1,0 +1,17 @@
+$ ls
+IntQueue.java
+Trace.java
+$ javac Trace.java
+$ ls
+IntQueue.class
+IntQueue.java
+Trace.class
+Trace.java
+$ java Trace
+enqueue(5)    front [5]   head=0, tail=1
+enqueue(8)    front [5, 8]   head=0, tail=2
+dequeue() =   5   front [8]
+enqueue(2)    front [8, 2]   head=1, tail=3
+enqueue(7)    front [8, 2, 7]   head=1, tail=0
+peek() =      8   front [8, 2, 7]
+size() =      3

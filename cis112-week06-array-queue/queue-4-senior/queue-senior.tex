@@ -1,0 +1,512 @@
+% !TEX spellcheck = en_US
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+% (NC) 2026 Haluk Bingol
+% github.com/halukbingol/LaTeX-Templates
+%
+% Licensees may copy, distribute, display, and perform the work and make derivative works 
+% and remixes based on it only for non-commercial purposes. 
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% =====================================================================
+%  Queues -- Senior Level: Internals, Concurrency and Production
+%  ---------------------------------------------------------------------
+%  Built on hblib/Template/hblibTemplate.tex with the libraries in ../../hblib/.
+%  Programs and their real outputs are in codeoutput/:
+%     codeoutput/<Name>.java  a program (classes without main() are only compiled)
+%     codeoutput/<Name>.sh    a terminal session (javap needs the JDK)
+%     codeoutput/<Name>.txt   what it printed, made by:  bash run_examples.sh
+% =====================================================================
+
+\documentclass[aspectratio=169,10pt,compress]{beamer}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V hblib
+	\usepackage{../../hblib/hblibPresentation} % lib presentation: theme, i/N, \hSection, algorithm2e, ...
+	\usepackage{../../hblib/hblibCodeoutput} % lib code + output: \lstcode, \lstterminal, ...
+	\usepackage{../../hblib/hblibDatastructures} % lib data structures: \hString, \hStack, \hQueue
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A hblib
+
+
+% xcolor, array (and the L{width} column), listings, tikz and algorithm2e come from the hblib libraries
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+
+\newcommand{\win}{\textbf{Windows}}
+\newcommand{\mac}{\textbf{macOS}}
+
+% listings: fixed character cells, so the columns of a program's output stay aligned
+\lstset{columns=fixed}
+
+% algorithm2e set-up (the package is loaded by hblibPresentation)
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwError}{error}
+
+% ---------------------------------------------------------------------
+\title{Queues}
+\subtitle{Senior Level: Internals, Concurrency and Production}
+\author[Bingol]{Haluk O. Bingol}
+
+\institute[FCIS]{
+    Faculty of Computer and Information Sciences\\
+    Yeditepe University
+}
+\date{
+	{\tiny \hbTimeStamp}
+}
+
+\begin{document}
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+  \titlepage
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Outline}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={1-3}, hideallsubsections]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \tableofcontents[sections={4-5}, hideallsubsections]
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Internals]{Inside \texttt{ArrayDeque}}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The fields of \texttt{ArrayDeque}}
+  \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/Javap.txt}
+  \vspace{0.3em}
+  \begin{itemize}\small
+    \item Three fields, exactly like our \texttt{ArrayQueue}: \texttt{elements}, \texttt{head}, \texttt{tail}.
+    \item No \texttt{size} field: the length is derived from the two indices, and one slot is kept free.
+    \item \texttt{grow} and \texttt{newCapacity} are private: the growth policy is not part of the API.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Arithmetic without \texttt{\%}}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{itemize}\small
+        \item The capacity is always a \textbf{power of two}.
+        \item Adding one: \hCode{(i + 1) \& (n - 1)}
+        \item Subtracting one: \hCode{(i - 1) \& (n - 1)}
+        \item The bitwise \texttt{and} keeps only the low bits: it is the same as \texttt{\% n}, but faster.
+      \end{itemize}
+      \vspace{0.3em}
+      \small That is why \texttt{ArrayDeque} allocates 16, 32, 64, \dots{} slots, never 10 or 100.
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{center}\footnotesize
+      \begin{tabular}{rrr}
+        \toprule
+        $i$ & \texttt{(i+1) \& 7} & \texttt{\% 8} \\
+        \midrule
+        0 & 1 & 1 \\
+        5 & 6 & 6 \\
+        7 & 0 & 0 \\
+        8 & 1 & 0$^{*}$ \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+      \scriptsize $^{*}$\,the index is always kept below $n$.
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Growing a wrapped deque}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small The queue is full and wrapped: \texttt{head = 5}, \texttt{tail = 4} in 8 slots.\\[0.3em]
+      \begin{tikzpicture}\hQueueArray{8}{5}{4}{7}{F,G,H,A,B,C,D}[0.42][0.35]\end{tikzpicture}\\[0.3em]
+      \texttt{doubleCapacity} copies the two runs, \textbf{front first}:\\[0.2em]
+      \begin{tikzpicture}\hQueueArray{16}{0}{7}{7}{F,G,H,A,B,C,D}[0.42][0.35]\end{tikzpicture}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item The new array is twice as large and is \textbf{linearised}: \texttt{head = 0}, \texttt{tail = size}.
+        \item A copy of the whole queue: $O(n)$, and it happens only when the capacity is reached.
+        \item Java's \texttt{ArrayDeque} doubles; the JDK never shrinks it automatically.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Ring buffers are everywhere}
+  \begin{itemize}
+    \item \textbf{Network cards}: a receive ring of fixed-size buffers. When the ring is full, packets are dropped.
+    \item \textbf{Audio}: a play buffer filled by the producer and drained by the sound card.
+    \item \textbf{Disks and SSDs}: the I/O submission and completion rings.
+    \item \textbf{Kafka}: an append-only log per partition; consumers keep an offset, not a pointer.
+    \item \textbf{Disruptor}: a pre-allocated ring between threads, with sequence numbers instead of locks.
+    \item \textbf{Logs and metrics}: keep the last $n$ events (a bounded queue that overwrites the oldest).
+  \end{itemize}
+  \vspace{0.5em}
+  \small All of them trade \textbf{capacity} for \textbf{predictable latency}: the memory is allocated once, at start-up.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Concurrency]{Queues and Threads}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A queue shared by threads}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{One lock around the whole queue}
+        \small correct and simple; producers and consumers wait for each other, even when they touch different ends.
+      \end{block}
+      \begin{block}{Two locks, one per end}
+        \small better, but the ``empty'' and ``full'' cases need condition variables.
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Lock-free}
+        \small \texttt{AtomicReference} and compare-and-set; no thread ever blocks the others.
+      \end{block}
+      \begin{block}{False sharing}
+        \small \texttt{head} and \texttt{tail} in one cache line: every update invalidates the other core's copy.
+        Padding the fields (or \texttt{@Contended}) can double throughput.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{A lock-free queue: Michael--Scott, 1996}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=20, lastline=35, firstnumber=20]{codeoutput/MsQueue.java}{Java}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \lstcode[basicstyle=\ttfamily\tiny, firstline=37, lastline=51, firstnumber=37]{codeoutput/MsQueue.java}{Java}
+    \end{column}
+  \end{columns}
+  \small A \textbf{dummy node} separates \texttt{head} from the first real element, so enqueue and dequeue never touch the same field.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{How the Michael--Scott queue works}
+  \begin{enumerate}\small
+    \item \texttt{tail} points to the last node; \texttt{head} points to a dummy node whose \texttt{next} is the first element.
+    \item Enqueue: link the new node after \texttt{tail} with a CAS, then move \texttt{tail} with a second CAS.
+    \item If the second CAS fails, another thread is already helping: the queue is still correct.
+    \item Dequeue: read \texttt{head.next}; CAS \texttt{head} forward. The old head becomes garbage.
+    \item No lock is held, but every loop is a \textbf{retry} under contention: progress is lock-free, not wait-free.
+  \end{enumerate}
+  \vspace{0.3em}
+  \begin{block}{Why the dummy node?}
+    \small It gives \texttt{head} and \texttt{tail} separate fields to update, and it makes ``the queue has one element'' look like any other state.
+  \end{block}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Testing it under contention}
+  \lstcodedownstep[basicstyle=\ttfamily\tiny, lastline=18][basicstyle=\ttfamily\scriptsize]{codeoutput/MsQueueTest.java}{Java}{codeoutput/MsQueueTest.txt}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{The ABA problem}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small A CAS succeeds if the value is still \texttt{A}; it cannot see that the value went $A \to B \to A$.
+      \begin{enumerate}\small
+        \item T1 reads \texttt{top = A}, is delayed.
+        \item T2 pops A, pops B, pushes A again (the same address).
+        \item T1's CAS sees \texttt{A} and succeeds, although the list changed.
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Why Java is spared here}
+        \small The garbage collector does not reuse the address of a \textbf{live} object. A node that T1 still holds cannot be recycled, so the address cannot come back.
+      \end{block}
+      \begin{block}{C and C++}
+        \small Freed nodes are reused. Use hazard pointers, epoch-based reclamation, or a tagged pointer (a version counter next to the address).
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Memory ordering in one slide}
+  \begin{itemize}\small
+    \item A \texttt{compareAndSet} is a \textbf{full fence}: the writes before it are visible to a thread that sees its success.
+    \item \texttt{lazySet} (release) is cheaper but weaker: use it only when the order does not matter for correctness.
+    \item The Java Memory Model gives \textbf{happens-before} through volatile writes, \texttt{Atomic*} operations and locks.
+    \item Without that edge, a consumer can see the new \texttt{tail} but not the element written before it.
+    \item The queue is correct on paper and broken on a weakly ordered CPU if one fence is missing.
+  \end{itemize}
+  \vspace{0.4em}
+  \small This is why lock-free code is reviewed line by line and tested on x86 \emph{and} ARM.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Production]{Production and Security}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Bounded or unbounded?}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/Oom.txt}
+      \small The JVM was started with \texttt{-Xmx24m} (see \texttt{Oom.jvmargs}); the run is real.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item An unbounded queue accepts work faster than it can be done.
+        \item The heap fills; the failure arrives far from the cause.
+        \item A bounded queue pushes back at the producer, where the overload is visible.
+        \item Choose the policy when full: block, drop the oldest, drop the newest, or reject.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Back-pressure: what to do when the queue is full}
+  \begin{center}\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{policy} & \textbf{Java} & \textbf{effect} \\
+    \midrule
+    block the producer   & \texttt{put} on a \texttt{BlockingQueue} & slow down, never lose \\
+    fail fast            & \texttt{add} throws \texttt{IllegalStateException} & caller decides \\
+    drop the oldest      & \texttt{RingBuffer} (this deck) & latest data wins \\
+    drop the newest      & \texttt{offer} returns \texttt{false} & keep the backlog \\
+    reject at the door   & HTTP 503, load shedding & protect the service \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \small An unbounded queue is a policy too: ``never reject, use all the memory, then die''. Make it a \textbf{decision}, not an accident.
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Scheduling: more than one queue}
+  \begin{center}\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{discipline} & \textbf{who leaves first} & \textbf{where} \\
+    \midrule
+    FIFO            & the oldest arrival        & printers, thread pools \\
+    priority        & the smallest key          & \texttt{PriorityQueue}, schedulers \\
+    LIFO            & the newest arrival        & caches, backtracking \\
+    round robin     & one turn each             & the OS ready queue \\
+    weighted fair   & by a weight              & networks, databases \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \begin{itemize}\small
+    \item \texttt{PriorityQueue} is a heap: $O(\log n)$ enqueue and dequeue, not $O(1)$.
+    \item A priority queue is \textbf{not stable} unless the key carries an arrival counter.
+    \item ``FIFO'' is a fairness choice, not a law of nature.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Java 21: \texttt{SequencedCollection}}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \lstoutput[basicstyle=\ttfamily\scriptsize]{codeoutput/Sequenced.txt}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item \texttt{List}, \texttt{Deque} and \texttt{SortedSet} now share one interface with a \textbf{first} and a \textbf{last}.
+        \item \texttt{reversed()} returns a \textbf{view}, not a copy.
+        \item \texttt{getFirst}, \texttt{addFirst}, \texttt{removeLast}: one name for the same idea in every ordered collection.
+        \item The old \texttt{Stack} class is still there, but it is not a \texttt{Deque}.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{API design lessons}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{What went wrong with \texttt{java.util.Stack}}
+        \small It extends \texttt{Vector}: every method is synchronized, and it exposes \texttt{get(i)} and \texttt{add(i, x)}, so a stack can be changed in the middle. The documentation itself recommends \texttt{Deque}.
+      \end{block}
+      \begin{block}{What went right with \texttt{Queue}}
+        \small A small interface, two failure styles (\texttt{add}/\texttt{offer}), and several implementations.
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        \item An interface should not promise more than the ADT needs.
+        \item Do not extend a concrete class to reuse code: inheritance exposes its whole API.
+        \item Offer both a throwing and a value-returning form, and document the difference.
+        \item Keep the implementation class private to the package when possible.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Security and robustness}
+  \begin{itemize}
+    \item \textbf{Memory exhaustion}: an unbounded queue fed by untrusted input is a one-line denial of service. Bound it and reject.
+    \item \textbf{Queue flooding}: rate-limit per user before the queue, not after.
+    \item \textbf{Poison messages}: one item that always fails blocks a FIFO worker forever. Use a retry limit and a dead-letter queue.
+    \item \textbf{Head-of-line blocking}: a slow item delays everyone behind it. Split into priority or per-key queues.
+    \item \textbf{Information leaks}: a queue shared between tenants must not hand one tenant's item to another.
+    \item \textbf{Observability}: expose the queue length and the age of the oldest item; a growing queue is the first sign of trouble.
+  \end{itemize}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
+\hSection[Summary]{Summary}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Checklist for a queue in production}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}\small
+        \item Is it \textbf{bounded}? What happens when full?
+        \item Is it \textbf{thread-safe}, and does the API say so?
+        \item Is the queue length \textbf{monitored}?
+        \item Is there a \textbf{dead-letter} path for bad items?
+        \item Is the item \textbf{immutable} once enqueued?
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}\small
+        \item Does the consumer \textbf{acknowledge} after the work, not before?
+        \item Is the queue \textbf{durable} if the process dies?
+        \item Is a slow consumer allowed to block the producer?
+        \item Is the \textbf{order} a requirement, or only a habit?
+        \item Can the queue be \textbf{drained} on shutdown?
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.4em}
+  \begin{block}{One sentence}
+    \small A queue is a \emph{policy} about waiting: who waits, how long, and what happens when the waiting must stop.
+  \end{block}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile] \frametitle{Projects}
+  \begin{enumerate}\small
+    \item Implement the Michael--Scott queue in Java and test it with 8 producers and 8 consumers. Measure the throughput against \texttt{ArrayBlockingQueue}.
+    \item Add padding to \texttt{head} and \texttt{tail} and measure the effect of false sharing.
+    \item Write a bounded ring buffer with three policies (block, overwrite, reject) and one interface.
+    \item Build a small job scheduler: a priority queue plus a FIFO queue, with aging so that old jobs are not starved.
+    \item Compare \texttt{ArrayDeque}, \texttt{LinkedList} and \texttt{ConcurrentLinkedQueue} in a producer/consumer test; report throughput and p99 latency.
+    \item Read the \texttt{ArrayDeque} source in the JDK and explain \texttt{doubleCapacity} line by line.
+  \end{enumerate}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V frm
+\begin{frame}[t,fragile]
+	\begin{center}
+		\vspace{4cm}
+		\hRemark{\Huge Questions?}
+	\end{center}
+\end{frame}
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A frm
+
+
+
+
+\end{document}
