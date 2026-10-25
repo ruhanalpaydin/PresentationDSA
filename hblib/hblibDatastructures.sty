@@ -1,6 +1,6 @@
 % !TEX spellcheck = en_US
 
-% v20261015T2000
+% v20261023T1345
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V
 % (NC) 2024 Haluk Bingol
@@ -11,7 +11,7 @@
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{hblibDatastructures}[2026/10/15 data structure library: queue, stack, string, tree and commit-graph styles]
+\ProvidesPackage{hblibDatastructures}[2026/10/23 data structure library: queue, stack, string, tree and commit-graph styles]
 
 \RequirePackage{xparse}
 \RequirePackage{xcolor} % color
@@ -164,6 +164,60 @@
 	}
 } % \hQueue
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A Queue
+
+
+
+
+%: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ V QueueArray
+% \hQueueArray{capacity}{head}{tail}{size}{A,B,C}[box width][box height]
+% The queue as it sits in a circular array, with a size counter:
+%   head = index of the front element, tail = index where the next element goes,
+%   size = number of elements.  The elements are given in QUEUE order (front first)
+%   and are drawn at (head + k) mod capacity, so a wrapped queue is drawn correctly.
+%   head is yellow, the free slot at tail is green, the elements in the queue are red,
+%   the other slots are grey.  A full queue (size = capacity) has head = tail.
+\NewDocumentCommand{\hQueueArray}{m m m m m O{0.6} O{0.5}}{%
+	\edef\qcap{#1}%
+	\edef\qhead{#2}%
+	\edef\qtail{#3}%
+	\edef\qsize{#4}%
+	\def\qwidth{#6}%
+	\def\qheight{#7}%
+	\def\qy{-.3}%
+	\def\qyshf{\qy+\qheight+0.11}%
+	\def\qyindex{\qy-0.14}%
+	\pgfmathtruncatemacro{\qlast}{\qcap-1}%
+	% the slots
+	\foreach \i in {0,...,\qlast} {%
+		\pgfmathtruncatemacro{\qrel}{mod(\i-\qhead+\qcap,\qcap)}%
+		\ifnum\qsize=0
+			\ifnum\i=\qhead \def\qfill{colorEmpty}\else\def\qfill{colorUnused}\fi
+		\else
+			\ifnum\i=\qhead
+				\def\qfill{colorHead}%
+			\else
+				\ifnum\i=\qtail
+					\ifnum\qsize=\qcap \def\qfill{colorHead}\else\def\qfill{colorTail}\fi
+				\else
+					\ifnum\qrel<\qsize \def\qfill{colorUsed}\else\def\qfill{colorUnused}\fi
+				\fi
+			\fi
+		\fi
+		\filldraw[fill=\qfill] (\i*\qwidth,\qy) rectangle +(\qwidth,\qheight);
+		\node[colorIndex] at (\i*\qwidth+\qwidth/2,\qyindex) {{\tiny \i}};
+	}%
+	% the elements, in queue order, starting at head
+	\foreach \elem [count=\qk] in {#5} {%
+		\pgfmathtruncatemacro{\qpos}{mod(\qhead+\qk-1,\qcap)}%
+		\node at (\qpos*\qwidth+\qwidth/2,\qy+\qheight/2) {{\scriptsize \elem}};
+	}%
+	% head and tail marks
+	\pgfmathsetmacro{\qxh}{\qhead*\qwidth+\qwidth/4}%
+	\pgfmathsetmacro{\qxt}{\qtail*\qwidth+\qwidth*3/4}%
+	\node[font=\tiny, text=red!70!black] at (\qxh,\qyshf) {h};
+	\node[font=\tiny, text=red!70!black] at (\qxt,\qyshf) {t};
+} % \hQueueArray
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ A QueueArray
 
 
 
