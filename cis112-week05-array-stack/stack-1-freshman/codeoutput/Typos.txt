@@ -4,11 +4,9 @@ Typo.java:5: error: ';' expected
                        ^
 1 error
 $ javac Typo.java
-Typo.java:4: error: cannot find symbol
-        s.Push(1);
-         ^
-  symbol:   method Push(int)
-  location: variable s of type IntStack
+Typo.java:5: error: ';' expected
+        int x = s.pop()
+                       ^
 1 error
 $ java trace
 Error: Could not find or load main class trace
